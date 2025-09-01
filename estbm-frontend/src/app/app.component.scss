@@ -1,0 +1,105 @@
+/* ===== PROFESSIONAL APP COMPONENT ===== */
+
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+/* Global animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+}
+
+/* Animation classes */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideInUp 0.4s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+/* Role-based theme attributes */
+html[data-role="student"] {
+  --theme-primary: var(--primary);
+  --theme-accent: var(--info);
+}
+
+html[data-role="admin"] {
+  --theme-primary: var(--secondary);
+  --theme-accent: var(--warning);
+}
+
+html[data-role="encadrant"] {
+  --theme-primary: var(--accent);
+  --theme-accent: var(--success);
+}
+
+/* Performance optimizations */
+* {
+  will-change: auto;
+}
+
+.animate-fade-in,
+.animate-slide-up,
+.animate-scale-in {
+  will-change: transform, opacity;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .card,
+  .btn,
+  .form-control {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

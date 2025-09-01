@@ -1,0 +1,201 @@
+
+
+
+<app-navbar></app-navbar>
+
+<div class="soutenance-layout" role="region" aria-label="Mes soutenances">
+  <div class="soutenance-container">
+
+    <!-- Header -->
+    <div class="soutenance-header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1>
+            <i class="bi bi-calendar-check"></i>
+            Mes Soutenances de Stage
+          </h1>
+          <p>Consultez vos créneaux de soutenance programmés — calendrier, statistiques et export PDF.</p>
+        </div>
+
+        <div class="header-actions">
+          <a routerLink="/student/dashboard" class="btn btn-outline-primary" title="Retour au tableau de bord">
+            <i class="bi bi-arrow-left"></i>
+            <span class="d-none d-sm-inline ms-2">Retour</span>
+          </a>
+
+          <button class="btn btn-primary ms-2" (click)="downloadPlanificationPDF()" title="Télécharger la planification en PDF">
+            <i class="bi bi-file-earmark-pdf"></i>
+            <span class="d-none d-sm-inline ms-2">Télécharger PDF</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prochaine soutenance (highlight) -->
+    <div *ngIf="getNextSoutenance()" class="next-soutenance-section" aria-live="polite">
+      <div class="next-soutenance-card">
+        <div class="card-header">
+          <div class="header-icon" aria-hidden="true">
+            <i class="bi bi-star-fill"></i>
+          </div>
+          <div class="card-title">
+            <h3>Prochaine Soutenance</h3>
+            <p class="muted">Votre prochaine présentation — préparez-vous en avance</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="next-soutenance-info">
+            <div class="soutenance-date">
+              <div class="date-circle" aria-hidden="true">
+                <span class="day">{{ getNextSoutenance()!.date | date:'dd' }}</span>
+                <span class="month">{{ getNextSoutenance()!.date | date:'MMM' }}</span>
+              </div>
+              <div class="date-details">
+                <h4>{{ formatDate(getNextSoutenance()!.date) }}</h4>
+                <p class="time-slot">
+                  <i class="bi bi-clock"></i>
+                  {{ formatTime(getNextSoutenance()!.heureDebut) }} - {{ formatTime(getNextSoutenance()!.heureFin) }}
+                </p>
+              </div>
+            </div>
+
+            <div class="soutenance-details">
+              <h5 class="topic">{{ getNextSoutenance()!.sujet }}</h5>
+              <div class="countdown">
+                <i class="bi bi-hourglass-split"></i>
+                <span>{{ getSoutenanceStatusText(getNextSoutenance()!) }}</span>
+              </div>
+            </div>
+
+            <div class="soutenance-actions">
+              <button class="btn btn-outline-light" (click)="addToCalendar(getNextSoutenance()!)" title="Ajouter au calendrier">
+                <i class="bi bi-calendar-plus"></i>
+                <span class="d-none d-sm-inline ms-1">Calendrier</span>
+              </button>
+              <button class="btn btn-outline-light" (click)="downloadSoutenanceInfo(getNextSoutenance()!)" title="Télécharger infos">
+                <i class="bi bi-download"></i>
+                <span class="d-none d-sm-inline ms-1">Infos</span>
+              </button>
+              <button class="btn btn-light text-primary" (click)="prepareSoutenance(getNextSoutenance()!)" title="Préparer la soutenance">
+                <i class="bi bi-book"></i>
+                <span class="d-none d-sm-inline ms-1">Préparer</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-section" aria-hidden="false">
+      <div class="stats-grid">
+        <div class="stat-card stat-primary" aria-label="Total soutenances">
+          <div class="stat-icon"><i class="bi bi-calendar-event"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">{{ soutenances.length }}</div>
+            <div class="stat-label">Total</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-success" aria-label="Soutenances à venir">
+          <div class="stat-icon"><i class="bi bi-calendar-check"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getUpcomingSoutenances().length }}</div>
+            <div class="stat-label">À venir</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-secondary" aria-label="Soutenances terminées">
+          <div class="stat-icon"><i class="bi bi-calendar-x"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getPastSoutenances().length }}</div>
+            <div class="stat-label">Terminées</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des soutenances -->
+    <div class="soutenances-section">
+      <div class="section-header">
+        <h2><i class="bi bi-list-check"></i> Toutes vos Soutenances</h2>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-state">
+        <app-loading size="lg" message="Chargement de vos soutenances..."></app-loading>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!loading && soutenances.length === 0" class="empty-state">
+        <div class="empty-icon"><i class="bi bi-calendar-x"></i></div>
+        <h4>Aucune soutenance programmée</h4>
+        <p>Vous n'avez pas encore de créneaux de soutenance assignés</p>
+      </div>
+
+      <!-- List -->
+      <div *ngIf="!loading && soutenances.length > 0" class="soutenances-list" role="list">
+        <div *ngFor="let soutenance of soutenances; let i = index"
+             role="listitem"
+             class="soutenance-item"
+             [ngClass]="getSoutenanceStatusClass(soutenance)"
+             [style.animationDelay]="i * 80 + 'ms'">
+
+          <div class="soutenance-timeline">
+            <div class="timeline-dot" aria-hidden="true"></div>
+            <div class="timeline-line" *ngIf="i < soutenances.length - 1" aria-hidden="true"></div>
+          </div>
+
+          <div class="soutenance-content">
+            <div class="soutenance-header">
+              <div class="soutenance-date">
+                <h4>{{ formatDate(soutenance.date) }}</h4>
+                <p class="time-info"><i class="bi bi-clock"></i> {{ formatTime(soutenance.heureDebut) }} - {{ formatTime(soutenance.heureFin) }}</p>
+              </div>
+
+              <div class="soutenance-status">
+                <span class="status-badge" [ngClass]="getSoutenanceStatusClass(soutenance)">
+                  <i class="bi"
+                     [ngClass]="{
+                       'bi-check-circle': getSoutenanceStatusClass(soutenance) === 'soutenance-past',
+                       'bi-clock': getSoutenanceStatusClass(soutenance) === 'soutenance-today',
+                       'bi-calendar-event': getSoutenanceStatusClass(soutenance) === 'soutenance-upcoming'
+                     }"></i>
+                  {{ getSoutenanceStatusText(soutenance) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="soutenance-details">
+              <h5>{{ soutenance.sujet }}</h5>
+              <div class="detail-item" *ngIf="soutenance.entreprise">
+                <i class="bi bi-building"></i>
+                <span>{{ soutenance.entreprise }}</span>
+              </div>
+            </div>
+
+            <div class="soutenance-actions">
+              <button class="btn btn-sm btn-outline-primary" (click)="addToCalendar(soutenance)" title="Ajouter au calendrier">
+                <i class="bi bi-calendar-plus"></i> Calendrier
+              </button>
+
+              <button class="btn btn-sm btn-outline-secondary" (click)="downloadSoutenanceInfo(soutenance)" title="Télécharger les informations">
+                <i class="bi bi-download"></i> Infos
+              </button>
+
+              <button *ngIf="getSoutenanceStatusClass(soutenance) === 'soutenance-upcoming'" class="btn btn-sm btn-primary" (click)="prepareSoutenance(soutenance)" title="Préparer">
+                <i class="bi bi-book"></i> Préparer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <button class="fab-download" (click)="downloadPlanificationPDF()" title="Télécharger planification en PDF" aria-label="Télécharger planification">
+    <i class="bi bi-file-earmark-pdf"></i>
+  </button>
+</div>
