@@ -23,7 +23,9 @@ import { User } from '../../../models/user.model';
     RouterModule, 
     NavbarComponent, 
     DataTableComponent, 
-    CardComponent
+    CardComponent,
+    LoadingComponent,
+    EmptyStateComponent
   ],
   templateUrl: './ma-planification.component.html',
   styleUrls: ['./ma-planification.component.scss']
@@ -125,7 +127,7 @@ export class MaPlanificationComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.loading = false;
-          // console.error('Erreur chargement soutenances:', error);
+          console.error('Erreur chargement soutenances:', error);
           this.cdr.detectChanges();
         }
       });
@@ -222,6 +224,7 @@ export class MaPlanificationComponent implements OnInit, OnDestroy {
       return mins > 0 ? `${hours}h${mins}` : `${hours}h`;
     }
   }
+
   addToCalendar(soutenance: SoutenanceEtudiantSlotDto): void {
     const startDate = new Date(soutenance.date + 'T' + soutenance.heureDebut);
     const endDate = new Date(soutenance.date + 'T' + soutenance.heureFin);
@@ -272,7 +275,18 @@ export class MaPlanificationComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Helper methods for template
+  getUpcomingSoutenances(): SoutenanceEtudiantSlotDto[] {
+    const today = new Date().toISOString().split('T')[0];
+    return this.soutenances.filter(s => s.date >= today);
+  }
 
+  getPastSoutenances(): SoutenanceEtudiantSlotDto[] {
+    const today = new Date().toISOString().split('T')[0];
+    return this.soutenances.filter(s => s.date < today);
+  }
 
-  
+  getNextSoutenance(): SoutenanceEtudiantSlotDto | null {
+    return this.nextSoutenance;
+  }
 }
